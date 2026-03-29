@@ -2,6 +2,7 @@ package event
 
 import (
 	"context"
+	"database/sql"
 	"errors"
 	"github.com/google/uuid"
 	"github.com/jmoiron/sqlx"
@@ -69,7 +70,15 @@ func (r *Repository) CreateEvent(ctx context.Context, event Event) error {
        )
     `
 
-	_, err := r.db.NamedExecContext(ctx, query, event)
+	var ext interface {
+		NamedExecContext(ctx context.Context, query string, arg interface{}) (sql.Result, error)
+	} = r.db
+
+	if tx, ok := ctx.Value("tx").(*sqlx.Tx); ok {
+		ext = tx
+	}
+
+	_, err := ext.NamedExecContext(ctx, query, event)
 	if err != nil {
 		r.logger.ErrorContext(ctx, "failed to insert outbox event", "error", err, "event_id", event.ID)
 		return err

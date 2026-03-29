@@ -2,6 +2,7 @@ package product
 
 import (
 	"context"
+	"database/sql"
 	"errors"
 	"github.com/google/uuid"
 	"github.com/jmoiron/sqlx"
@@ -58,7 +59,15 @@ func (r *Repository) InsertProduct(ctx context.Context, product Product) error {
 
 	r.logger.InfoContext(ctx, "executing query to insert new product", "query", query, "repository", "Repository")
 
-	_, err := r.db.NamedExecContext(ctx, query, dbProduct)
+	var ext interface {
+		NamedExecContext(ctx context.Context, query string, arg interface{}) (sql.Result, error)
+	} = r.db
+
+	if tx, ok := ctx.Value("tx").(*sqlx.Tx); ok {
+		ext = tx
+	}
+
+	_, err := ext.NamedExecContext(ctx, query, dbProduct)
 	if err != nil {
 		r.logger.ErrorContext(ctx, "failed to insert new product", "error", err)
 		return err
@@ -78,7 +87,15 @@ func (r *Repository) DeleteProductByID(ctx context.Context, id uuid.UUID) error 
 
 	r.logger.InfoContext(ctx, "executing query to delete product", "query", query, "repository", "Repository")
 
-	res, err := r.db.ExecContext(ctx, query, id, deletedAt)
+	var ext interface {
+		ExecContext(ctx context.Context, query string, args ...any) (sql.Result, error)
+	} = r.db
+
+	if tx, ok := ctx.Value("tx").(*sqlx.Tx); ok {
+		ext = tx
+	}
+
+	res, err := ext.ExecContext(ctx, query, id, deletedAt)
 	if err != nil {
 		r.logger.ErrorContext(ctx, "failed to delete product", "error", err)
 		return err

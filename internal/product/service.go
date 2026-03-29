@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"errors"
 	"github.com/google/uuid"
-	"reflect"
 	"unigroup-test-task/internal"
 	"unigroup-test-task/internal/event"
 )
@@ -80,7 +79,7 @@ func (s *Service) PostProduct(ctx context.Context, p Product) error {
 
 		evnt := event.Event{
 			ID:            uuid.New(),
-			AggregateType: reflect.TypeOf(p).Elem().Name(),
+			AggregateType: "OnProductCreated",
 			AggregateID:   p.ID,
 			EventType:     "post_product",
 			Payload:       productCreatedJSON,
@@ -108,7 +107,7 @@ func (s *Service) DeleteProduct(ctx context.Context, id uuid.UUID) error {
 
 		evnt := event.Event{
 			ID:            uuid.New(),
-			AggregateType: reflect.TypeOf(id).Name(),
+			AggregateType: "OnProductDeleted",
 			AggregateID:   id,
 			EventType:     "delete_product",
 			Payload:       productDeletedJSON,

@@ -23,7 +23,7 @@ func NewTransactor(l Logger, db *sqlx.DB) (*Transactor, error) {
 }
 
 func (t *Transactor) WithinTransaction(ctx context.Context, tFunc func(ctx context.Context) error) error {
-	tx, err := t.db.BeginTx(ctx, nil)
+	tx, err := t.db.BeginTxx(ctx, nil)
 	if err != nil {
 		return fmt.Errorf("cannot begin transaction: %w", err)
 	}
