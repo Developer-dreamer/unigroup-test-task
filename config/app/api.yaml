@@ -1,5 +1,5 @@
 app:
-  id: "ai-orchestrator_api"
+  id: "unigroup-test-task_api"
   port: "8080"
   env: "development"
   migrations_dir: "/app/db/migrations"

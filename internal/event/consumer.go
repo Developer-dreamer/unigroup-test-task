@@ -158,7 +158,7 @@ func (c *Consumer) consume(ctx context.Context) (ConsumerResult, error) {
 		if strVal, ok := v.(string); ok {
 			if k == "data" {
 				data = strVal
-			} else if k == "dataType" {
+			} else if k == "data_type" {
 				dataType = strVal
 			}
 		}
