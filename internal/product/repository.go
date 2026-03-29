@@ -44,7 +44,30 @@ func NewRepository(l internal.Logger, db *sqlx.DB) (*Repository, error) {
 }
 
 func (r *Repository) GetProducts(ctx context.Context, limit, offset int) ([]Product, error) {
-	return nil, nil
+	query := `
+		SELECT id, name, description, seller_id, price, amount
+		FROM products 
+		WHERE deleted_at IS NULL
+		ORDER BY created_at DESC
+		LIMIT $1 OFFSET $2
+	`
+
+	r.logger.InfoContext(ctx, "executing query to get products", "query", query, "limit", limit, "offset", offset, "repository", "Repository")
+
+	var dbProducts []ProductDB
+
+	err := r.db.SelectContext(ctx, &dbProducts, query, limit, offset)
+	if err != nil {
+		r.logger.ErrorContext(ctx, "failed to get products", "error", err)
+		return nil, err
+	}
+
+	products := make([]Product, 0, len(dbProducts))
+	for _, dbP := range dbProducts {
+		products = append(products, dbP.ToDomain())
+	}
+
+	return products, nil
 }
 
 func (r *Repository) InsertProduct(ctx context.Context, product Product) error {
