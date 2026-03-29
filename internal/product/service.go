@@ -5,8 +5,21 @@ import (
 	"encoding/json"
 	"errors"
 	"github.com/google/uuid"
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promauto"
 	"unigroup-test-task/internal"
 	"unigroup-test-task/internal/event"
+)
+
+var (
+	productsCreatedMetric = promauto.NewCounter(prometheus.CounterOpts{
+		Name: "products_created_total",
+		Help: "The total number of created products",
+	})
+	productsDeletedMetric = promauto.NewCounter(prometheus.CounterOpts{
+		Name: "products_deleted_total",
+		Help: "The total number of deleted products",
+	})
 )
 
 type Product struct {
@@ -58,7 +71,7 @@ func NewService(l internal.Logger, pr productRepository, er eventRepository, t e
 }
 
 func (s *Service) PostProduct(ctx context.Context, p Product) error {
-	return s.transactor.WithinTransaction(ctx, func(txCtx context.Context) error {
+	err := s.transactor.WithinTransaction(ctx, func(txCtx context.Context) error {
 		if err := s.productRepo.InsertProduct(txCtx, p); err != nil {
 			return err
 		}
@@ -88,10 +101,16 @@ func (s *Service) PostProduct(ctx context.Context, p Product) error {
 
 		return s.eventRepo.CreateEvent(txCtx, evnt)
 	})
+
+	if err == nil {
+		productsCreatedMetric.Inc()
+	}
+
+	return err
 }
 
 func (s *Service) DeleteProduct(ctx context.Context, id uuid.UUID) error {
-	return s.transactor.WithinTransaction(ctx, func(txCtx context.Context) error {
+	err := s.transactor.WithinTransaction(ctx, func(txCtx context.Context) error {
 		if err := s.productRepo.DeleteProductByID(txCtx, id); err != nil {
 			return err
 		}
@@ -116,6 +135,12 @@ func (s *Service) DeleteProduct(ctx context.Context, id uuid.UUID) error {
 
 		return s.eventRepo.CreateEvent(txCtx, evnt)
 	})
+
+	if err == nil {
+		productsDeletedMetric.Inc()
+	}
+
+	return err
 }
 
 func (s *Service) GetProducts(ctx context.Context, limit, offset int) ([]Product, error) {

@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"github.com/gorilla/mux"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"log/slog"
 	"net/http"
 	"os"
@@ -97,6 +98,8 @@ func registerRoutes(handler *product.Handler, logger internal.Logger) *mux.Route
 	r.HandleFunc("/products/{id}", handler.DeleteProduct).Methods(http.MethodDelete)
 
 	r.HandleFunc("/health", healthCheck).Methods(http.MethodGet)
+
+	r.Handle("/metrics", promhttp.Handler()).Methods(http.MethodGet)
 
 	return r
 }

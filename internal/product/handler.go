@@ -13,7 +13,7 @@ import (
 type CreateRequest struct {
 	Name        string    `json:"name"`
 	Description string    `json:"description"`
-	Seller      uuid.UUID `json:"seller"`
+	SellerID    uuid.UUID `json:"seller_id"`
 	Price       int64     `json:"price"`
 }
 
@@ -21,7 +21,7 @@ type ProductResponse struct {
 	ID          uuid.UUID `json:"id"`
 	Name        string    `json:"name"`
 	Description string    `json:"description"`
-	Seller      uuid.UUID `json:"seller"`
+	SellerID    uuid.UUID `json:"seller_id"`
 	Price       int64     `json:"price"`
 }
 
@@ -136,7 +136,7 @@ func (r *CreateRequest) RequestToDomain() Product {
 		ID:          uuid.New(),
 		Name:        r.Name,
 		Description: r.Description,
-		SellerID:    r.Seller,
+		SellerID:    r.SellerID,
 		Price:       r.Price,
 	}
 }
@@ -146,7 +146,7 @@ func ToResponse(domain Product) ProductResponse {
 		ID:          domain.ID,
 		Name:        domain.Name,
 		Description: domain.Description,
-		Seller:      domain.SellerID,
+		SellerID:    domain.SellerID,
 		Price:       domain.Price,
 	}
 }
@@ -158,7 +158,7 @@ func (r *CreateRequest) Validate() error {
 	if r.Price < 0 {
 		return errors.New("price cannot be negative")
 	}
-	if r.Seller == uuid.Nil {
+	if r.SellerID == uuid.Nil {
 		return errors.New("seller ID is required")
 	}
 	return nil
