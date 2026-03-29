@@ -60,6 +60,11 @@ func (h *Handler) PostProduct(rw http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if err := userProduct.Validate(); err != nil {
+		internal.WriteJSONError(rw, http.StatusBadRequest, "validation failed", err)
+		return
+	}
+
 	domainProduct := userProduct.RequestToDomain()
 	err = h.service.PostProduct(ctx, domainProduct)
 	if err != nil {
@@ -144,4 +149,17 @@ func ToResponse(domain Product) ProductResponse {
 		Seller:      domain.SellerID,
 		Price:       domain.Price,
 	}
+}
+
+func (r *CreateRequest) Validate() error {
+	if r.Name == "" {
+		return errors.New("product name is required")
+	}
+	if r.Price < 0 {
+		return errors.New("price cannot be negative")
+	}
+	if r.Seller == uuid.Nil {
+		return errors.New("seller ID is required")
+	}
+	return nil
 }
