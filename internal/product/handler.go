@@ -15,14 +15,16 @@ type CreateRequest struct {
 	Description string    `json:"description"`
 	SellerID    uuid.UUID `json:"seller_id"`
 	Price       int64     `json:"price"`
+	Amount      int       `json:"amount"`
 }
 
-type ProductResponse struct {
+type Response struct {
 	ID          uuid.UUID `json:"id"`
 	Name        string    `json:"name"`
 	Description string    `json:"description"`
 	SellerID    uuid.UUID `json:"seller_id"`
 	Price       int64     `json:"price"`
+	Amount      int       `json:"amount"`
 }
 
 type ProductService interface {
@@ -98,7 +100,7 @@ func (h *Handler) GetProducts(rw http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	response := make([]ProductResponse, 0, len(products))
+	response := make([]Response, 0, len(products))
 	for _, p := range products {
 		response = append(response, ToResponse(p))
 	}
@@ -138,16 +140,18 @@ func (r *CreateRequest) RequestToDomain() Product {
 		Description: r.Description,
 		SellerID:    r.SellerID,
 		Price:       r.Price,
+		Amount:      r.Amount,
 	}
 }
 
-func ToResponse(domain Product) ProductResponse {
-	return ProductResponse{
+func ToResponse(domain Product) Response {
+	return Response{
 		ID:          domain.ID,
 		Name:        domain.Name,
 		Description: domain.Description,
 		SellerID:    domain.SellerID,
 		Price:       domain.Price,
+		Amount:      domain.Amount,
 	}
 }
 
