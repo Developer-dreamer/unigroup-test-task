@@ -1,0 +1,43 @@
+package config
+
+import (
+	"fmt"
+	"strings"
+)
+
+type APIConfig struct {
+	App      APIAppConfig   `yaml:"app"`
+	Postgres PostgresConfig `yaml:"postgres"`
+	Redis    RedisConfig    `yaml:"redis"`
+}
+
+type APIAppConfig struct {
+	ID            string `yaml:"id" env:"APP_ID" env-default:"api"`
+	Port          string `yaml:"port" env:"APP_PORT" env-default:"8080"`
+	Environment   string `yaml:"env" env:"APP_ENV" env-default:"development"`
+	MigrationsDir string `yaml:"migrations_dir" env:"MIGRATIONS_DIR"`
+
+	Backoff BackoffConfig `yaml:"backoff"`
+}
+
+type PostgresConfig struct {
+	Host     string `yaml:"host" env:"POSTGRES_HOST" env-default:"localhost"`
+	Port     int    `yaml:"port" env:"POSTGRES_PORT" env-default:"5432"`
+	User     string `yaml:"user" env:"POSTGRES_USER" env-default:"postgres"`
+	Password string `yaml:"-" env:"POSTGRES_PASSWORD"`
+	DBName   string `yaml:"db_name" env:"POSTGRES_DB"`
+}
+
+func (pc PostgresConfig) GetConnectionString() string {
+	if strings.HasPrefix(pc.Host, "/") {
+		return fmt.Sprintf(
+			"host=%s user=%s password=%s dbname=%s sslmode=disable",
+			pc.Host, pc.User, pc.Password, pc.DBName,
+		)
+	}
+
+	return fmt.Sprintf(
+		"postgres://%s:%s@%s:%d/%s?sslmode=disable",
+		pc.User, pc.Password, pc.Host, pc.Port, pc.DBName,
+	)
+}
