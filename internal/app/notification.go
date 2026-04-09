@@ -20,7 +20,10 @@ func SetupListener(cfg *config.NotifConfig, l *slog.Logger) *event.Consumer {
 	}
 
 	consumer, err := event.NewConsumer(l, redisClient, &cfg.Redis.SubStream, &cfg.App.Backoff)
-
+	if err != nil {
+		l.Error("Failed to initiate consumer. Server shutdown.", "error", err)
+		os.Exit(1)
+	}
 	return consumer
 }
 

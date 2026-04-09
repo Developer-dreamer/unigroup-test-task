@@ -105,7 +105,7 @@ func (r *Repository) DeleteProductByID(ctx context.Context, id uuid.UUID) error 
 	query := `
 		UPDATE products
 		SET deleted_at = $2
-		WHERE id = $1
+		WHERE id = $1 and deleted_at is null
 	`
 
 	r.logger.InfoContext(ctx, "executing query to delete product", "query", query, "repository", "Repository")
